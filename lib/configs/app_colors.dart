@@ -18,5 +18,7 @@ const Color kcSlightGrey = Color(0xFFE1E1E1);
 const Color kcLightGreyColor = Color(0xffe5e5e5);
 const Color kcVeryLightGreyColor = Color(0xFFF8F8F8);
 
+const Color kcCardColor = Colors.white;
+
 // Graidents
 const kcDarkGradient = [Colors.black, Color.fromARGB(255, 26, 26, 26)];

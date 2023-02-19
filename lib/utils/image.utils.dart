@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:go_green_app/app_libs.dart';
+import 'package:chatbot/app_libs.dart';
 import 'dart:ui' as ui;
 
 class ImageUtils {
