@@ -1,1 +1,1 @@
-export 'image.utils.dart';
+export 'helpers/db_helpers.dart';

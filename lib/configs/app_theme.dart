@@ -1,13 +1,17 @@
 // Light Theme
+import 'package:chatbot/provider/themeHandler.dart';
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 import 'app_text.dart';
 
+  AppTheme appTheme = AppTheme();
+
 // Dark Theme
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
-  primaryColor: kcPrimary,
+  primaryColor: kcLightPrimary,
+
   appBarTheme: AppBarTheme(
       backgroundColor: getColorFromBrightness(Brightness.light),
       titleTextStyle: titleStyle.copyWith(color: kcFont),

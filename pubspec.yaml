@@ -32,9 +32,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  chat_gpt_sdk:
+    git:
+      url: https://github.com/iampawan/Flutter-ChatGPT.git
   velocity_x: ^3.6.0
   flutter_dotenv:
-  chat_gpt_sdk: ^2.0.0
+  gallery_saver: ^2.3.2
+  sqflite: ^2.2.4+1
+
 
   # line_icons: ^2.0.1
   # logger: ^1.1.0
