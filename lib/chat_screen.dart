@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
+import 'package:chatbot/model/Message.dart';
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'app_libs.dart';
@@ -16,43 +15,76 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  List<ChatMessage> _messages = [];
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Message> _messages = [];
+
   late OpenAI? chatGPT;
   bool _isImageSearch = false;
-
+  bool _isSearching = false;
   bool _isTyping = false;
 
   @override
   void initState() {
     chatGPT = OpenAI.instance.build(
-      token: "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",
+      token: "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",
       baseOption: HttpSetup(receiveTimeout: 60000),
     );
 
     super.initState();
   }
 
-  void uploadMessage(String text, bool isBot, bool isImage) {
+  void searchMessage(String msg) {
+    String searchKey = _searchController.text.toLowerCase();
+    if (searchKey.isEmpty) {
+      setState(() {
+        //return the old value from database
+      });
+      return;
+    }
+
+    setState(() {
+      _messages = _messages
+          .where((element) => element.text.toLowerCase().contains(searchKey))
+          .toList();
+    });
+  }
+
+  void _toggleSearchBar() {
+    setState(() {
+      _isSearching = !_isSearching;
+    });
+    // if (!_isSearching) {}
+  }
+
+  void uploadMessage(Message msg) {
     DBHelper.insert('messages', {
       'id': DateTime.now().toIso8601String(),
-      'text': text,
-      'isBot': isBot,
-      'isImage': isImage
+      'text': msg.text,
+      'isBot': msg.isBot,
+      'isImage': msg.isImage
     });
+  }
+
+  void _clearDatabase() async {
+    setState(() {
+      _messages = [];
+    });
+    await DBHelper.clear();
   }
 
   Future<void> fetchAndSetPlaces() async {
     final dataList = await DBHelper.getData('messages');
     _messages = dataList
         .map(
-          (item) => ChatMessage(
+          (item) => Message(
             text: item['text'],
-            sender: item['isBot'] == 1 ? 'bot' : 'user',
-            isImage: item['isImage'] == 1,
+            isBot: item['isBot'],
+            isImage: item['isImage'],
           ),
         )
         .toList();
-    _messages = new List.from(_messages.reversed);
+    _messages = List.from(_messages.reversed);
   }
 
   @override
@@ -68,16 +100,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() async {
     if (_controller.text.isEmpty) return;
-    ChatMessage message = ChatMessage(
+    Message message = Message(
       text: _controller.text,
-      sender: "user",
+      isBot: false,
       isImage: false,
     );
 
     setState(() {
       _messages.insert(0, message);
       _isTyping = true;
-      uploadMessage(message.text, message.sender != "user", message.isImage);
+      uploadMessage(message);
     });
 
     _controller.clear();
@@ -93,23 +125,22 @@ class _ChatScreenState extends State<ChatScreen> {
           prompt: message.text, model: kTranslateModelV3, maxTokens: 3000);
 
       final response = await chatGPT!.onCompleteText(request: request);
-      Vx.log(response!.choices[0].text);
-      insertNewData(response.choices[0].text, isImage: false);
+      // Vx.log(response!.choices[0].text);
+      insertNewData(response!.choices[0].text, isImage: false);
     }
   }
 
   void insertNewData(String response, {bool isImage = false}) {
-    ChatMessage botMessage = ChatMessage(
+    Message botMessage = Message(
       text: response,
-      sender: "bot",
+      isBot: true,
       isImage: isImage,
     );
 
     setState(() {
       _isTyping = false;
       _messages.insert(0, botMessage);
-      uploadMessage(
-          botMessage.text, botMessage.sender != "user", botMessage.isImage);
+      uploadMessage(botMessage);
     });
   }
 
@@ -135,11 +166,12 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
             IconButton(
-                onPressed: () {
-                  _isImageSearch = true;
-                  _sendMessage();
-                },
-                icon: const Icon(Icons.image))
+              onPressed: () {
+                _isImageSearch = true;
+                _sendMessage();
+              },
+              icon: const Icon(Icons.image),
+            )
           ],
         ),
       ],
@@ -150,10 +182,33 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("AI ChatBot"),
+          title: _isSearching
+              ? Expanded(
+                  child: Padding(
+                  padding: const EdgeInsets.only(left: 15),
+                  child: TextField(
+                    controller: _searchController,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(hintText: 'Search'),
+                    onSubmitted: (value) {
+                      searchMessage(value);
+                    },
+                  ),
+                ))
+              : const Text("AI ChatBot"),
           actions: [
             IconButton(
-              icon: Icon(Icons.light_mode),
+              onPressed: _toggleSearchBar,
+              icon: _isSearching
+                  ? const Icon(Icons.search_off)
+                  : const Icon(Icons.search),
+            ),
+            IconButton(
+              onPressed: _clearDatabase,
+              icon: const Icon(Icons.cleaning_services_outlined),
+            ),
+            IconButton(
+              icon: const Icon(Icons.light_mode),
               onPressed: appTheme.switchingTheme,
             ),
           ],
@@ -162,30 +217,38 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               Flexible(
-                  child: FutureBuilder(
-                future: fetchAndSetPlaces(),
-                builder: (ctx, snapshot) =>
-                    snapshot.connectionState == ConnectionState.waiting
-                        ? Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : ListView.builder(
-                            reverse: true,
-                            padding: Vx.m8,
-                            itemCount: _messages.length,
-                            itemBuilder: (context, index) {
-                              return _messages[index];
-                            },
-                          ),
-              )),
+                child: FutureBuilder(
+                  future: fetchAndSetPlaces(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : _messages.isEmpty
+                              ? const Center(
+                                  child: Text('No Request History Yet!'),
+                                )
+                              : ListView.builder(
+                                  reverse: true,
+                                  padding: Vx.m8,
+                                  itemCount: _messages.length,
+                                  itemBuilder: (context, index) {
+                                    return ChatMessage(
+                                      sender: _messages[index].isBot
+                                          ? 'bot'
+                                          : 'user',
+                                      text: _messages[index].text,
+                                      isImage: _messages[index].isImage,
+                                    );
+                                  },
+                                ),
+                ),
+              ),
               if (_isTyping) const ThreeDots(),
               const Divider(
                 height: 1.0,
               ),
               Container(
-                decoration: BoxDecoration(
-                    // color: context.cardColor,
-                    ),
                 child: _buildTextComposer(),
               )
             ],
