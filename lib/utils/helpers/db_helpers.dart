@@ -9,9 +9,9 @@ class DBHelper {
       path.join(dbPath, 'chatbot.db'),
       onCreate: (db, version) {
         return db.execute(
-            'CREATE TABLE messages (id TEXT PRIMARY KEY, text TEXT, isImage BOOL, isBot BOOL)'
-            );
+            'CREATE TABLE messages (id TEXT PRIMARY KEY, text TEXT, isImage BOOL, isBot BOOL)');
       },
+      version: 1,
     );
   }
 

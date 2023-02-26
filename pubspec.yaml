@@ -39,7 +39,7 @@ dependencies:
   flutter_dotenv:
   gallery_saver: ^2.3.2
   sqflite: ^2.2.4+1
-
+  flutter_svg: ^2.0.2
 
   # line_icons: ^2.0.1
   # logger: ^1.1.0
@@ -65,9 +65,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - .env
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+    - assets/user.svg
+    - assets/bot.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

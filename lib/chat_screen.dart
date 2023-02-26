@@ -27,16 +27,16 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     chatGPT = OpenAI.instance.build(
-      token: "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",
+      token: "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",
       baseOption: HttpSetup(receiveTimeout: 60000),
     );
 
     super.initState();
   }
 
-  void searchMessage(String msg) {
-    String searchKey = _searchController.text.toLowerCase();
+  void searchMessage(String searchKey) async {
     if (searchKey.isEmpty) {
+      await fetchAndSetPlaces();
       setState(() {
         //return the old value from database
       });
@@ -48,13 +48,20 @@ class _ChatScreenState extends State<ChatScreen> {
           .where((element) => element.text.toLowerCase().contains(searchKey))
           .toList();
     });
+    if (_messages.isEmpty) {
+      await fetchAndSetPlaces();
+      setState(() {});
+    }
   }
 
-  void _toggleSearchBar() {
+  void _toggleSearchBar() async {
     setState(() {
       _isSearching = !_isSearching;
     });
-    // if (!_isSearching) {}
+    if (!_isSearching) {
+      await fetchAndSetPlaces();
+      setState(() {});
+    }
   }
 
   void uploadMessage(Message msg) {
@@ -79,8 +86,8 @@ class _ChatScreenState extends State<ChatScreen> {
         .map(
           (item) => Message(
             text: item['text'],
-            isBot: item['isBot'],
-            isImage: item['isImage'],
+            isBot: item['isBot'] == 1,
+            isImage: item['isImage'] == 1,
           ),
         )
         .toList();
@@ -115,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
 
     if (_isImageSearch) {
-      final request = GenerateImage(message.text, 1, size: "256x256");
+      final request = GenerateImage(message.text, 1, size: "512x512");
 
       final response = await chatGPT!.generateImage(request);
       // Vx.log(response!.data!.last!.url!);
@@ -190,7 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _searchController,
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(hintText: 'Search'),
-                    onSubmitted: (value) {
+                    onChanged: (value) {
                       searchMessage(value);
                     },
                   ),
@@ -217,32 +224,45 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               Flexible(
-                child: FutureBuilder(
-                  future: fetchAndSetPlaces(),
-                  builder: (ctx, snapshot) =>
-                      snapshot.connectionState == ConnectionState.waiting
-                          ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : _messages.isEmpty
-                              ? const Center(
-                                  child: Text('No Request History Yet!'),
-                                )
-                              : ListView.builder(
-                                  reverse: true,
-                                  padding: Vx.m8,
-                                  itemCount: _messages.length,
-                                  itemBuilder: (context, index) {
-                                    return ChatMessage(
-                                      sender: _messages[index].isBot
-                                          ? 'bot'
-                                          : 'user',
-                                      text: _messages[index].text,
-                                      isImage: _messages[index].isImage,
-                                    );
-                                  },
-                                ),
-                ),
+                child: _isSearching
+                    ? ListView.builder(
+                        reverse: true,
+                        padding: Vx.m8,
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          return ChatMessage(
+                            sender: _messages[index].isBot ? 'bot' : 'user',
+                            text: _messages[index].text,
+                            isImage: _messages[index].isImage,
+                          );
+                        },
+                      )
+                    : FutureBuilder(
+                        future: fetchAndSetPlaces(),
+                        builder: (ctx, snapshot) =>
+                            snapshot.connectionState == ConnectionState.waiting
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : _messages.isEmpty
+                                    ? const Center(
+                                        child: Text('No Request History Yet!'),
+                                      )
+                                    : ListView.builder(
+                                        reverse: true,
+                                        padding: Vx.m8,
+                                        itemCount: _messages.length,
+                                        itemBuilder: (context, index) {
+                                          return ChatMessage(
+                                            sender: _messages[index].isBot
+                                                ? 'bot'
+                                                : 'user',
+                                            text: _messages[index].text,
+                                            isImage: _messages[index].isImage,
+                                          );
+                                        },
+                                      ),
+                      ),
               ),
               if (_isTyping) const ThreeDots(),
               const Divider(

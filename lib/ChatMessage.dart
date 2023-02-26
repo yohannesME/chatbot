@@ -1,4 +1,6 @@
+import 'package:chatbot/app_libs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:flutter/services.dart';
@@ -23,16 +25,15 @@ class ChatMessage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(sender)
-              .text
-              .subtitle1(context)
-              .make()
-              .box
-              .color(sender == "user" ? Vx.red200 : Vx.green200)
-              .p16
-              .rounded
-              .alignCenter
-              .makeCentered(),
+          Container(
+            width: 30,
+            height: 30,
+            child: sender == 'user'
+                ? ImageUtils.getSvgFromAsset('assets/user.svg',
+                    color: kcDarkGrey)
+                : ImageUtils.getSvgFromAsset('assets/bot.svg',
+                    color: kcDarkGrey),
+          ),
           Expanded(
             child: isImage
                 ? AspectRatio(
@@ -42,7 +43,8 @@ class ChatMessage extends StatelessWidget {
                       loadingBuilder: (context, child, loadingProgress) =>
                           loadingProgress == null
                               ? child
-                              : const CircularProgressIndicator.adaptive(),
+                              : Center(
+                                  child: const CircularProgressIndicator()),
                     ),
                   )
                 : text.trim().text.bodyText1(context).make().px8(),
@@ -71,7 +73,7 @@ class ChatMessage extends StatelessWidget {
                       const SnackBar(
                         duration: Duration(milliseconds: 1500),
                         content: Text('copied to clip board.'),
-                      ), 
+                      ),
                     );
                   });
                 }
