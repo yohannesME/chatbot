@@ -14,54 +14,43 @@ This Flutter application provides a user interface to interact with the ChatGPT 
 
 https://github.com/yohannesME/chatbot
 
-Navigate to the project directory:
-bash
-Copy code
+2. Navigate to the project directory:
+   
 cd your-repository
-Install dependencies:
-bash
-Copy code
-flutter pub get
-Run the application:
-bash
-Copy code
-flutter run
-Note: Ensure that you have an Android or iOS emulator running, or a physical device connected to your computer.
 
-Usage
+3. Install dependencies:
+
+flutter pub get
+
+4. Run the application:
+
+flutter run
+
+# Note: Ensure that you have an Android or iOS emulator running, or a physical device connected to your computer.
+
+## Usage
 The application consists of two main features: ChatGPT and DALL-E. You can access these features through the respective screens.
 
-ChatGPT
+## ChatGPT
 Launch the application on your device/emulator.
-
 On the home screen, tap on the "ChatGPT" button.
-
 You will be taken to the ChatGPT screen.
-
 Enter your question or prompt in the input field provided.
-
 Tap the "Send" button to submit your input.
-
 Wait for the ChatGPT model to process your request and generate a response.
-
 The generated response will be displayed on the screen.
 
-DALL-E
+## DALL-E
 Launch the application on your device/emulator.
-
 On the home screen, tap on the "DALL-E" button.
-
 You will be taken to the DALL-E screen.
-
 Enter a textual description of the image you want to generate in the input field provided.
-
 Tap the "Generate" button to submit your description.
-
 Wait for the DALL-E model to process your request and generate an image based on the description.
 
 The generated image will be displayed on the screen.
 
-Notes
+### Notes
 The ChatGPT model relies on an internet connection to communicate with the OpenAI API for generating responses.
 
 The DALL-E model also requires an internet connection to send requests to the OpenAI API for image generation.
@@ -70,10 +59,8 @@ Ensure a stable internet connection to avoid any disruptions in communication wi
 
 Be mindful of the prompt or description you provide to the models, as it greatly influences the generated responses or images.
 
-Troubleshooting
+## Troubleshooting
 If you encounter any issues or errors while running the application, ensure that your Flutter and Dart SDK versions meet the prerequisites mentioned above.
 
 If the ChatGPT or DALL-E features do not work as expected, verify that you have a working internet connection and that the OpenAI API endpoints are accessible.
 
-Contributing
-Contributions to this project are welcome! If you have any suggestions, bug fixes, or additional features, feel free to open an issue or submit a pull request on the repository.
